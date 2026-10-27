@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ear Training – EQ</title>
+<style>
+  :root { --cream:#fff6e0; --ink:#111; --yellow:#ffd93d; --pink:#ff6fa8; --purple:#a78bfa; --green:#3ddc84; --orange:#ff9f43; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--cream); color:var(--ink); font-family:Inter,Arial,"Noto Sans Thai",system-ui,sans-serif; line-height:1.5; overflow-x:hidden; }
+  .blob { position:fixed; z-index:0; pointer-events:none; border:4px solid var(--ink); }
+  .b1 { width:340px; height:340px; border-radius:50%; background:var(--yellow); top:-130px; right:-100px; }
+  .b2 { width:240px; height:240px; border-radius:58% 42% 55% 45%; background:var(--pink); bottom:-90px; left:-80px; }
+  .b3 { width:150px; height:150px; border-radius:50%; background:var(--purple); bottom:20%; right:-60px; }
+  .b4 { width:110px; height:110px; border-radius:30% 70% 60% 40%; background:var(--green); top:34%; left:-50px; }
+  main { position:relative; z-index:1; max-width:860px; margin:0 auto; padding:26px 18px 60px; }
+  header { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+  header svg { width:40px; height:40px; }
+  h1 { font-size:1.9rem; font-weight:900; margin:0; letter-spacing:-.02em; }
+  .card { background:#fff; border:4px solid var(--ink); border-radius:18px; box-shadow:7px 7px 0 var(--ink); padding:18px 22px; margin-bottom:24px; }
+  .tag { display:inline-block; background:var(--yellow); border:3px solid var(--ink); border-radius:999px; padding:1px 14px; font-weight:800; font-size:.9rem; }
+  h2 { font-size:2.1rem; line-height:1.15; font-weight:900; margin:10px 0 8px; letter-spacing:-.02em; }
+  #brief { margin:0; font-size:1.05rem; }
+  .row { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:24px; }
+  .btn { display:inline-flex; align-items:center; gap:8px; background:#fff; color:var(--ink); border:3px solid var(--ink); border-radius:12px; box-shadow:4px 4px 0 var(--ink); padding:10px 20px; font:800 1rem Inter,Arial,"Noto Sans Thai",sans-serif; cursor:pointer; transition:transform .06s, box-shadow .06s; }
+  .btn:hover { transform:translate(-1px,-1px); box-shadow:5px 5px 0 var(--ink); }
+  .btn:active { transform:translate(4px,4px); box-shadow:0 0 0 var(--ink); }
+  .btn:focus-visible { outline:4px solid var(--purple); outline-offset:3px; }
+  .btn svg { width:18px; height:18px; fill:none; stroke:var(--ink); stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+  .btn.play { background:var(--yellow); font-size:1.2rem; padding:12px 28px; }
+  .btn.check { background:var(--green); font-size:1.1rem; padding:12px 26px; }
+  .btn.ab { background:var(--purple); }
+  .pill { margin-left:auto; border:3px solid var(--ink); border-radius:999px; background:#fff; padding:2px 16px; font-weight:800; }
+  .pill.on { background:var(--green); }
+  .cutbox { display:flex; align-items:baseline; gap:12px; margin-bottom:10px; }
+  .lbl { font-weight:800; font-size:1rem; }
+  #cutoff { font-size:2.4rem; font-weight:900; font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
+  canvas { width:100%; height:300px; display:block; touch-action:none; cursor:ew-resize; border:4px solid var(--ink); border-radius:12px; background:#fffdf6; }
+  .hint { display:flex; justify-content:space-between; font-weight:800; font-size:.9rem; margin:8px 2px 0; }
+  .sub { margin:6px 2px 0; font-size:.9rem; }
+  #result { display:none; }
+  #score { display:inline-block; font-size:2.4rem; font-weight:900; background:var(--green); border:3px solid var(--ink); border-radius:12px; padding:0 16px; margin-bottom:8px; }
+  #result.fair #score { background:var(--orange); }
+  #feedback { font-weight:800; font-size:1.1rem; margin:6px 0; }
+  #explain { margin:6px 0 14px; }
+  @media (max-width:600px) { h2 { font-size:1.6rem; } #cutoff { font-size:1.8rem; } .pill { margin-left:0; } }
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
+<main>
+  <header>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="2.5" y="14" width="4.5" height="7" rx="2" fill="#ff6fa8"/><rect x="17" y="14" width="4.5" height="7" rx="2" fill="#ff6fa8"/></svg>
+    <h1>Ear Training</h1>
+  </header>
+
+  <section class="card">
+    <span class="tag">Level 01</span>
+    <h2 id="levelName"></h2>
+    <p id="brief"></p>
+  </section>
+
+  <div class="row">
+    <button class="btn play" id="btnPlay"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="#fff"/></svg>Play</button>
+    <button class="btn" id="btnPause"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>Pause</button>
+    <button class="btn" id="btnRestart"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-3-6.2"/><path d="M20 4v5h-5"/></svg>Restart</button>
+    <button class="btn ab" id="btnAB" title="สลับฟังต้นฉบับ (A) กับหลังกรอง (B)">A/B: B หลังกรอง</button>
+    <span class="pill" id="status">หยุดอยู่</span>
+  </div>
+
+  <section class="card">
+    <div class="cutbox"><span class="lbl">Cutoff</span><span id="cutoff">20,000 Hz</span></div>
+    <canvas id="eq" aria-label="EQ graph: ลากจุดสีเหลืองเพื่อปรับ Cutoff"></canvas>
+    <div class="hint"><span>← ความถี่ต่ำ</span><span>ความถี่สูง →</span></div>
+    <p class="sub">ลากจุดสีเหลืองไปซ้ายหรือขวา แล้วฟังว่าเสียงเปลี่ยนยังไง (ใส่หูฟังจะได้ยินชัดกว่า)</p>
+  </section>
+
+  <div class="row">
+    <button class="btn" id="btnReset">Reset</button>
+    <button class="btn check" id="btnCheck">Check answer</button>
+  </div>
+
+  <section class="card" id="result" aria-live="polite">
+    <div id="score"></div>
+    <p id="feedback"></p>
+    <p id="explain"></p>
+    <button class="btn" id="btnAgain">Try again</button>
+  </section>
+</main>
+
+<script>
+/* ---------- Level data (เพิ่ม level ใหม่ได้ที่นี่) ---------- */
+const levels = [
+  {
+    name: "Remove High-Frequency Noise",
+    brief: "เสียง Piano มี Noise ความถี่สูงรบกวนอยู่ ใช้ Low-Pass Filter เพื่อลด Noise โดยรักษาเสียง Piano ให้มากที่สุด",
+    type: "lowpass",
+    targetFrequency: 8500,      // ไม่แสดงให้ผู้เล่นเห็น
+    noiseBand: [10000, 18000],  // ย่านของ Noise (hiss ด้านบน)
+    noiseProbe: [11000, 13000, 16000], // จุดที่ใช้วัดว่า Noise ลดลงไหม
+    pianoBand: [3000, 5000, 7000], // ย่านที่ต้องรักษาไว้ (Piano หลักอยู่ ~100 Hz–7 kHz)
+    explain: "Low-Pass Filter จะปล่อยความถี่ต่ำผ่าน และลดความถี่ที่สูงกว่า Cutoff"
+  }
+];
+
+const gameState = { currentLevel: 0, cutoffFrequency: 20000, isPlaying: false, score: 0, started: false, ab: "B" };
+const F_MIN = 20, F_MAX = 20000, DB_MIN = -48, DB_MAX = 6;
+const level = () => levels[gameState.currentLevel];
+
+/* ---------- Audio engine (Web Audio API เท่านั้น) ---------- */
+const audio = { ctx:null, filters:[], sources:[], pianoBuf:null, noiseBuf:null };
+
+function makePianoBuffer(ctx) {
+  const sr = ctx.sampleRate, len = sr * 8;
+  const buf = ctx.createBuffer(1, len, sr), d = buf.getChannelData(0);
+  const notes = [130.81, 261.63, 329.63, 392.0, 523.25, 392.0, 329.63, 523.25];
+  notes.forEach((f, n) => {
+    const start = Math.floor(n * 0.85 * sr);
+    const kMax = Math.min(40, Math.floor(7000 / f)); // Piano ไม่ขึ้นเกิน ~7 kHz
+    for (let k = 1; k <= kMax; k++) {
+      const amp = Math.pow(k, -1.1), decay = 1.1 + 0.55 * k, w = 2 * Math.PI * f * k / sr;
+      for (let i = 0; start + i < len && i < sr * 2.2; i++) {
+        const t = i / sr;
+        d[start + i] += amp * Math.sin(w * i) * Math.exp(-t * decay) * Math.min(1, t * 400);
+      }
+    }
+  });
+  let peak = 0; for (let i = 0; i < len; i++) peak = Math.max(peak, Math.abs(d[i]));
+  for (let i = 0; i < len; i++) d[i] *= 0.5 / peak;
+  return buf;
+}
+function makeNoiseBuffer(ctx) {
+  const buf = ctx.createBuffer(1, ctx.sampleRate * 4, ctx.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  return buf;
+}
+function initAudio() {
+  if (audio.ctx) return;
+  const ctx = audio.ctx = new (window.AudioContext || window.webkitAudioContext)();
+  audio.pianoBuf = makePianoBuffer(ctx);
+  audio.noiseBuf = makeNoiseBuffer(ctx);
+  // Piano + Noise -> Master -> LowPass 48 dB/oct (4 stages) -> Output
+  audio.master = ctx.createGain(); audio.master.gain.value = 0.8;
+  audio.filters = [0.5098, 0.6013, 0.9, 2.5629].map(q => {
+    const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.Q.value = 20 * Math.log10(q); f.frequency.value = gameState.cutoffFrequency; return f;
+  });
+  let prev = audio.master;
+  audio.filters.forEach(f => { prev.connect(f); prev = f; });
+  prev.connect(ctx.destination);
+}
+function startSources() {
+  const ctx = audio.ctx, lv = level();
+  audio.sources.forEach(s => { try { s.stop(); } catch (e) {} });
+  const piano = ctx.createBufferSource(); piano.buffer = audio.pianoBuf; piano.loop = true;
+  const noise = ctx.createBufferSource(); noise.buffer = audio.noiseBuf; noise.loop = true;
+  const mk = (type, f) => { const n = ctx.createBiquadFilter(); n.type = type; n.Q.value = -3.01; n.frequency.value = f; return n; };
+  const hp = mk("highpass", lv.noiseBand[0]), hp2 = mk("highpass", lv.noiseBand[0]), lp = mk("lowpass", lv.noiseBand[1]);
+  const ng = ctx.createGain(); ng.gain.value = 0.3;
+  piano.connect(audio.master);
+  noise.connect(hp); hp.connect(hp2); hp2.connect(lp); lp.connect(ng); ng.connect(audio.master);
+  piano.start(); noise.start();
+  audio.sources = [piano, noise];
+  gameState.started = true;
+}
+function effectiveCutoff() { return gameState.ab === "A" ? Math.min(21000, audio.ctx.sampleRate / 2 - 100) : gameState.cutoffFrequency; }
+function updateFilter() {
+  if (!audio.ctx) return;
+  audio.filters.forEach(f => f.frequency.setTargetAtTime(effectiveCutoff(), audio.ctx.currentTime, 0.015));
+}
+async function play() {
+  initAudio();
+  await audio.ctx.resume();           // ต้องเรียกหลังผู้ใช้กดปุ่ม (autoplay policy)
+  if (!gameState.started) startSources();
+  gameState.isPlaying = true; setStatus();
+}
+async function pause() { if (audio.ctx) { await audio.ctx.suspend(); } gameState.isPlaying = false; setStatus(); }
+async function restart() { initAudio(); await audio.ctx.resume(); startSources(); gameState.isPlaying = true; setStatus(); }
+function setStatus() { const el = document.getElementById("status"); el.textContent = gameState.isPlaying ? "กำลังเล่น" : "หยุดอยู่"; el.classList.toggle("on", gameState.isPlaying); }
+
+/* ---------- Frequency mapping (log scale) ---------- */
+function frequencyToX(f, w) { return Math.log(f / F_MIN) / Math.log(F_MAX / F_MIN) * w; }
+function xToFrequency(x, w) { return F_MIN * Math.pow(F_MAX / F_MIN, Math.min(1, Math.max(0, x / w))); }
+function magnitude(f, fc) { return 1 / Math.sqrt(1 + Math.pow(f / fc, 16)); }   // Butterworth 8th order = 48 dB/oct
+const dbToY = (db, h) => (DB_MAX - Math.max(DB_MIN, db)) / (DB_MAX - DB_MIN) * h;
+
+/* ---------- EQ graph ---------- */
+const canvas = document.getElementById("eq"), g = canvas.getContext("2d");
+const PAD = { L:18, R:22, T:16, B:36 };
+let dragging = false, hover = false, nodePos = { x:0, y:0 };
+function draw() {
+  const dpr = window.devicePixelRatio || 1, W = canvas.clientWidth, H = canvas.clientHeight;
+  if (canvas.width !== Math.round(W * dpr)) { canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); }
+  g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  const pw = W - PAD.L - PAD.R, ph = H - PAD.T - PAD.B;
+  const X = f => PAD.L + frequencyToX(f, pw), Y = db => PAD.T + dbToY(db, ph);
+  const lv = level(), fc = gameState.cutoffFrequency;
+  // โซน Noise
+  const nx0 = X(lv.noiseBand[0]), nx1 = X(lv.noiseBand[1]);
+  g.globalAlpha = 0.3; g.fillStyle = "#ff6fa8"; g.fillRect(nx0, PAD.T, nx1 - nx0, ph); g.globalAlpha = 1;
+  g.fillStyle = "#111"; g.font = "800 14px Inter,Arial,sans-serif"; g.textAlign = "center"; g.fillText("Noise", (nx0 + nx1) / 2, PAD.T + 22);
+  // แกนหนา + ป้ายความถี่
+  g.strokeStyle = "#111"; g.lineWidth = 4; g.lineCap = "square";
+  g.beginPath(); g.moveTo(PAD.L, PAD.T); g.lineTo(PAD.L, PAD.T + ph); g.lineTo(PAD.L + pw, PAD.T + ph); g.stroke();
+  g.lineWidth = 3; g.font = "800 12px Inter,Arial,sans-serif";
+  [[20, "20 Hz"], [100, "100 Hz"], [1000, "1 kHz"], [5000, "5 kHz"], [10000, "10 kHz"], [20000, "20 kHz"]].forEach(([f, t], i, a) => {
+    const x = X(f); g.beginPath(); g.moveTo(x, PAD.T + ph); g.lineTo(x, PAD.T + ph + 7); g.stroke();
+    g.textAlign = i === 0 ? "left" : i === a.length - 1 ? "right" : "center";
+    g.fillText(t, i === 0 ? x - 2 : i === a.length - 1 ? x + 2 : x, H - 8);
+  });
+  // เส้นโค้ง Low-Pass (ขอบดำ + สีม่วง)
+  const trace = () => {
+    g.beginPath();
+    for (let x = 0; x <= pw; x += 2) {
+      const y = Y(20 * Math.log10(magnitude(xToFrequency(x, pw), fc)));
+      x ? g.lineTo(PAD.L + x, y) : g.moveTo(PAD.L + x, y);
+    }
+  };
+  g.lineJoin = "round"; g.lineCap = "round";
+  trace(); g.strokeStyle = "#111"; g.lineWidth = 11; g.stroke();
+  trace(); g.strokeStyle = "#7c3aed"; g.lineWidth = 5; g.stroke();
+  // จุด Cutoff (node ใหญ่ มีเงาแข็ง)
+  nodePos = { x: X(fc), y: Y(20 * Math.log10(Math.SQRT1_2)) };
+  const r = (hover || dragging) ? 20 : 16;
+  g.fillStyle = "#111"; g.beginPath(); g.arc(nodePos.x + 4, nodePos.y + 4, r, 0, 7); g.fill();
+  g.fillStyle = "#ffd93d"; g.beginPath(); g.arc(nodePos.x, nodePos.y, r, 0, 7); g.fill();
+  g.strokeStyle = "#111"; g.lineWidth = 4; g.stroke();
+  document.getElementById("cutoff").textContent = Math.round(fc).toLocaleString("en-US") + " Hz";
+}
+function pointerPos(e) { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top, w: r.width }; }
+function moveHandle(e) {
+  const p = pointerPos(e);
+  gameState.cutoffFrequency = xToFrequency(p.x - PAD.L, p.w - PAD.L - PAD.R);
+  updateFilter(); draw();
+}
+canvas.addEventListener("pointerdown", e => { dragging = true; canvas.setPointerCapture(e.pointerId); canvas.style.cursor = "grabbing"; moveHandle(e); });
+canvas.addEventListener("pointermove", e => {
+  if (dragging) { moveHandle(e); return; }
+  const p = pointerPos(e), h = Math.hypot(p.x - nodePos.x, p.y - nodePos.y) < 28;
+  if (h !== hover) { hover = h; canvas.style.cursor = h ? "grab" : "ew-resize"; draw(); }
+});
+canvas.addEventListener("pointerup", () => { dragging = false; canvas.style.cursor = hover ? "grab" : "ew-resize"; draw(); });
+canvas.addEventListener("pointerleave", () => { if (!dragging && hover) { hover = false; draw(); } });
+window.addEventListener("resize", draw);
+
+/* ---------- Scoring ---------- */
+function calculateScore() {
+  const lv = level(), fc = gameState.cutoffFrequency, avg = a => a.reduce((t, f) => t + magnitude(f, fc), 0) / a.length;
+  const n = Math.min(1, (1 - avg(lv.noiseProbe)) / 0.9);   // Noise ลดลงแค่ไหน
+  const p = avg(lv.pianoBand);                              // Piano เหลือรายละเอียดแค่ไหน
+  const c = Math.max(0, 1 - Math.abs(Math.log2(fc / lv.targetFrequency)) * 2); // ใกล้ย่านที่เหมาะสมแค่ไหน
+  return Math.round(100 * (0.4 * n + 0.3 * p + 0.3 * c));
+}
+function checkAnswer() {
+  const fc = gameState.cutoffFrequency, s = gameState.score = calculateScore();
+  let msg;
+  if (fc > 10500)     msg = "ยังมี Noise ความถี่สูงเหลืออยู่ ลองลด Cutoff ลงอีก";
+  else if (fc < 6500) msg = "คุณตัด High Frequency ของ Piano มากเกินไป ลองเพิ่ม Cutoff ขึ้นเล็กน้อย";
+  else if (s >= 90)   msg = "ดีมาก! Noise ลดลงโดยที่เสียง Piano ยังชัดเจน";
+  else                msg = "ใกล้แล้ว! ลองขยับ Cutoff อีกนิด แล้วฟังว่า Noise หายไปโดยที่ Piano ยังชัดอยู่ที่จุดไหน";
+  const tier = s >= 90 ? "Excellent" : s >= 75 ? "Good" : s >= 60 ? "Fair" : "Try again";
+  const box = document.getElementById("result");
+  box.style.display = "block"; box.className = s >= 75 ? "" : "fair";
+  document.getElementById("score").textContent = "Score: " + s + "/100 (" + tier + ")";
+  document.getElementById("feedback").textContent = msg;
+  document.getElementById("explain").textContent = level().explain;
+}
+function resetLevel() {
+  gameState.cutoffFrequency = F_MAX; gameState.score = 0;
+  document.getElementById("result").style.display = "none";
+  updateFilter(); draw();
+}
+
+/* ---------- Wiring ---------- */
+function loadLevel() {
+  document.getElementById("levelName").textContent = level().name;
+  document.getElementById("brief").textContent = level().brief;
+  resetLevel();
+}
+document.getElementById("btnPlay").onclick = play;
+document.getElementById("btnPause").onclick = pause;
+document.getElementById("btnRestart").onclick = restart;
+document.getElementById("btnAB").onclick = e => {
+  gameState.ab = gameState.ab === "A" ? "B" : "A";
+  e.target.textContent = gameState.ab === "A" ? "A/B: A ต้นฉบับ" : "A/B: B หลังกรอง";
+  updateFilter();
+};
+document.getElementById("btnReset").onclick = resetLevel;
+document.getElementById("btnAgain").onclick = resetLevel;
+document.getElementById("btnCheck").onclick = checkAnswer;
+loadLevel();
+</script>
+</body>
+</html>
